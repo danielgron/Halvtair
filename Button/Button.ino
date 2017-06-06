@@ -83,8 +83,8 @@ void setup() {
   incBtn = digitalRead(inc);
   decBtn = digitalRead(dec);
   tickBtn = digitalRead(tickButton);
-  if (switchSpIp && !decBtn && !edit) loadFact();
-  if (switchSpIp && decBtn && !edit) loadFactNonTail();
+  if (switchSpIp  && switchEdit) loadFact();
+  if (switchSpIp && !switchEdit) loadFactNonTail();
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);
   // initialize the pushbutton pin as an input:
@@ -145,12 +145,7 @@ void loop() {
    tick();
    delay(400);
   }
-  if (!hasStarted &&  switchEdit && !halt && decBtn) {
-    
-    //decIp();
-    //delay (400); // Make sure we don't get multiple inputs
-  }
-  else if (!hasStarted &&  switchEdit && !halt && incBtn) {
+  if (!hasStarted &&  switchEdit && !halt && incBtn) {
     saveInstruction();
   }
   if ((halt | !hasStarted) && (incBtn || decBtn)) incDec();
@@ -180,26 +175,28 @@ void loadFact(){
 }
 
 void loadFactNonTail(){ // Få skrevet koden 
-  data[0] = B01000010;
-  data[1] = B00010000;
-  data[2] = B01001010;
-  data[3] = B00010000;
-  data[4] = B00001100;
-  data[5] = B11001000;
-  data[6] = B00010010;
-  data[7] = B00001111;
-  data[8] = B00110010;
-  data[9] = B00000111;
-  data[10] = B10001100;
-  data[11] = B00011001;
-  data[12] = B00110101;
-  data[13] = B00000010;
-  data[14] = B00100010;
-  data[15] = B00110010;
-  data[16] = B00010111;
-  data[17] = B00100001;
-  data[18] = B00001100;
-  data[19] = B10001000;
+data[0] = B01001010;
+data[1] = B00010000;
+data[2] = B00001100;
+data[3] = B11000110;
+data[4] = B00010010;
+data[5] = B00001111;
+data[6] = B00110010;
+data[7] = B00000111;
+data[8] = B10001100;
+data[9] = B01000010;
+data[10] = B00100001;
+data[11] = B00011000;
+data[12] = B00010000;
+data[13] = B00010111;
+data[14] = B00010000;
+data[15] = B00001100;
+data[16] = B11000110;
+data[17] = B00010011;
+data[18] = B00010010;
+data[19] = B00000010;
+data[20] = B00100001;
+data[21] = B00011000;
 }
 
 void saveInstruction(){
@@ -374,7 +371,7 @@ if ((instr & B11111110)==B00010000) {
 //0001 001r  POP r r ← [SP++]; IP++
 if ((instr & B11111110)==B00010010) {
   Serial.println("pop 0001 001r ");
-  if ((instr & B00001000) == B00000000) regA =data[sp];
+  if ((instr & B00000001) == B00000000) regA =data[sp];
   else regB = data[sp];
   incSp();
   incIp();
