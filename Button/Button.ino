@@ -68,7 +68,8 @@ byte regA=0;
 byte regB=0;
 byte data[64] = {};
 bool flag;
-bool halt; 
+bool halt;
+bool hasStarted; 
 
 
 // variables will change:
@@ -77,7 +78,13 @@ int buttonState = 0;         // variable for reading the pushbutton status
 void setup() {
   ip=0;
   sp=0;
-  if (analogRead(spIp)) loadFact();
+  switchSpIp = analogRead(spIp);
+  switchEdit = analogRead(edit);
+  incBtn = digitalRead(inc);
+  decBtn = digitalRead(dec);
+  tickBtn = digitalRead(tickButton);
+  if (switchSpIp && !decBtn && !edit) loadFact();
+  if (switchSpIp && decBtn && !edit) loadFactNonTail();
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);
   // initialize the pushbutton pin as an input:
@@ -109,6 +116,8 @@ void loop() {
   incBtn = digitalRead(inc);
   decBtn = digitalRead(dec);
   tickBtn = digitalRead(tickButton);
+
+  
   // read the state of the pushbutton value:
   //buttonState = digitalRead(2)*digitalRead(3)*digitalRead(4)*digitalRead(5)*digitalRead(6)*digitalRead(7)*digitalRead(8)*digitalRead(9);
   //Serial.println(digitalRead(2)+digitalRead(3)*2+digitalRead(4)*4+digitalRead(5)*8+digitalRead(6)*16+digitalRead(7)*32+digitalRead(8)*64+digitalRead(9)*128);
@@ -132,6 +141,13 @@ void loop() {
    tick();
    delay(500);
   }
+  if (!tickBtn && switchEdit && !halt && decBtn) {
+    saveInstruction();
+    
+  }
+  if (!tickBtn && switchEdit && !halt && incBtn) {
+    
+  }
 }
 void loadFact(){
   data[0] = B01000010;
@@ -154,6 +170,42 @@ void loadFact(){
   data[17] = B00100001;
   data[18] = B00001100;
   data[19] = B10001000;
+}
+
+void loadFactNonTail(){ // Få skrevet koden 
+  data[0] = B01000010;
+  data[1] = B00010000;
+  data[2] = B01001010;
+  data[3] = B00010000;
+  data[4] = B00001100;
+  data[5] = B11001000;
+  data[6] = B00010010;
+  data[7] = B00001111;
+  data[8] = B00110010;
+  data[9] = B00000111;
+  data[10] = B10001100;
+  data[11] = B00011001;
+  data[12] = B00110101;
+  data[13] = B00000010;
+  data[14] = B00100010;
+  data[15] = B00110010;
+  data[16] = B00010111;
+  data[17] = B00100001;
+  data[18] = B00001100;
+  data[19] = B10001000;
+}
+
+void saveInstruction(){
+  byte instr = B00000000;
+  if (digitalRead(io1)) instr = (instr | B00000001);
+  if (digitalRead(io2)) instr = (instr | B00000010);
+  if (digitalRead(io3)) instr = (instr | B00000100);
+  if (digitalRead(io4)) instr = (instr | B00001000);
+  if (digitalRead(io5)) instr = (instr | B00010000);
+  if (digitalRead(io6)) instr = (instr | B00100000);
+  if (digitalRead(io7)) instr = (instr | B01000000);
+  if (digitalRead(io8)) instr = (instr | B10000000);
+  delay (200); // Make sure we don't get multiple inputs
 }
 
 void incDec(){
