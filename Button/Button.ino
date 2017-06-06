@@ -116,6 +116,10 @@ void loop() {
   incBtn = digitalRead(inc);
   decBtn = digitalRead(dec);
   tickBtn = digitalRead(tickButton);
+  if (tickBtn && !hasStarted) {
+    hasStarted = true;
+    ip =0;
+  }
 
   
   // read the state of the pushbutton value:
@@ -135,19 +139,22 @@ void loop() {
     // turn LED off:
     digitalWrite(ledPin, LOW);
   }
-  if (halt && (incBtn || decBtn)) incDec(); 
+  
   memoryLights();
   if ( tickBtn && !halt) {
    tick();
-   delay(500);
+   delay(400);
   }
-  if (!tickBtn && switchEdit && !halt && decBtn) {
+  if (!hasStarted &&  switchEdit && !halt && decBtn) {
+    
+    //decIp();
+    //delay (400); // Make sure we don't get multiple inputs
+  }
+  else if (!hasStarted &&  switchEdit && !halt && incBtn) {
     saveInstruction();
-    
   }
-  if (!tickBtn && switchEdit && !halt && incBtn) {
-    
-  }
+  if ((halt | !hasStarted) && (incBtn || decBtn)) incDec();
+  delay(100); 
 }
 void loadFact(){
   data[0] = B01000010;
@@ -205,7 +212,7 @@ void saveInstruction(){
   if (digitalRead(io6)) instr = (instr | B00100000);
   if (digitalRead(io7)) instr = (instr | B01000000);
   if (digitalRead(io8)) instr = (instr | B10000000);
-  delay (200); // Make sure we don't get multiple inputs
+  data[ip] = instr;
 }
 
 void incDec(){
